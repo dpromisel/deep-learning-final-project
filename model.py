@@ -20,7 +20,6 @@ class Transformer_Seq2Seq(tf.keras.Model):
 
 		# Define english and french embedding layers:
 		self.review_embedding = tf.Variable(tf.random.truncated_normal(shape=[self.review_vocab_size, self.embedding_size], stddev=0.1, dtype=tf.float32))
-		self.score_embedding = tf.Variable(tf.random.truncated_normal(shape=[self.score_size, self.embedding_size], stddev=0.1, dtype=tf.float32))
 
 		# Create positional encoder layer for reviews
 		self.review_pos_embedding = transformer.Position_Encoding_Layer(self.review_window_size, self.embedding_size)
@@ -43,12 +42,11 @@ class Transformer_Seq2Seq(tf.keras.Model):
 		"""
 
 		encode_embedding = tf.nn.embedding_lookup(self.review_embedding, encoder_input)
-		decode_embedding = tf.nn.embedding_lookup(self.score_embedding, decoder_input)
 
 		review_pos_embedding = self.review_pos_embedding(encode_embedding)
 		encoding = self.encoder(review_pos_embedding)
 
-		decoding = self.decoder(decode_embedding,encoding)
+		decoding = self.decoder(decoder_input,encoding)
 
 		dense1 = self.dense1(decoding)
 		dense2 = self.dense2(dense1)
