@@ -9,6 +9,27 @@ SAMPLE_FILE = "./data/sample_us.tsv"
 REVIEW_WINDOW_SIZE = 14
 ##########DO NOT CHANGE#####################
 
+def build_vocab(sentences):
+	"""
+	DO NOT CHANGE
+
+	Builds vocab from list of sentences
+
+	:param sentences:  list of sentences, each a list of words
+	:return: tuple of (dictionary: word --> unique index, pad_token_idx)
+	"""
+	tokens = []
+	for s in sentences:
+		tokens.extend(s.split())
+
+	print(tokens)
+
+	all_words = sorted(list(set(tokens)))
+
+	vocab =  {word:i for i,word in enumerate(all_words)}
+
+	return vocab
+
 def read_data(file_name):
 	"""
 	DO NOT CHANGE
@@ -31,16 +52,28 @@ def get_data():
 	"""
 	"""
 
+	test_fraction = 0.1
 	#1) Read Review Data for training and testing (see read_data)
 	reviews = read_data(SAMPLE_FILE)
 
 	inputs = []
 	labels = []
 
+	#2) Grab labels and inputs from reviews
 	for review in reviews:
 		labels.append(review["star_rating"])
 		inputs.append(review["review_headline"] + " " + review["review_body"])
 
-	print(inputs, labels)
+	#3) Build Reviews Vocab
+	review_vocab = build_vocab(inputs)
+	# print(review_vocab)
 
-	return inputs, labels, [], [], [], []
+	#4) Split into Test and Train data
+	split = int(len(inputs) * (1 - test_fraction))
+	train_inputs, test_inputs = inputs[:split], inputs[split:]
+	train_labels, test_labels = labels[:split], labels[split:]
+
+	# print("Train Size: ", len(train_inputs), len(train_labels))
+	# print("Test Size: ", len(test_inputs), len(test_labels))
+
+	return train_inputs, test_inputs, train_labels, test_labels, review_vocab
