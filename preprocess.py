@@ -6,7 +6,6 @@ import csv
 ##########DO NOT CHANGE#####################
 REVIEW_FILE = "./data/amazon_camera_reviews.tsv"
 SAMPLE_FILE = "./data/sample_us.tsv"
-REVIEW_WINDOW_SIZE = 14
 ##########DO NOT CHANGE#####################
 
 def build_vocab(sentences):

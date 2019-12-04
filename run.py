@@ -56,7 +56,7 @@ def main():
 	train_scores, test_scores, train_reviews, test_reviews, scores_vocab, reviews_vocab = get_data()
 	print("Preprocessing complete.")
 
-	model_args = (REVIEW_WINDOW_SIZE, len(reviews_vocab))
+	model_args = (len(reviews_vocab))
 	model = Transformer_Seq2Seq(*model_args)
 
 	# id2word = {v: k for k, v in scores_vocab.items()}
