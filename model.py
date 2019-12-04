@@ -18,8 +18,7 @@ class Transformer_Seq2Seq(tf.keras.Model):
 
 		self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
-
-		# Define english and french embedding layers:
+		# Define review embedding layers:
 		self.review_embedding = tf.Variable(tf.random.truncated_normal(shape=[self.input_vocab_size, self.embedding_size], stddev=0.1, dtype=tf.float32))
 
 		# Create positional encoder layer for reviews

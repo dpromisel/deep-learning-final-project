@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import numpy as np
 from preprocess import *
-from transformer_model import Transformer_Seq2Seq
+from model import Transformer_Seq2Seq
 import sys
 
 def train(model, train_reviews, train_scores):
@@ -53,7 +53,7 @@ def test(model, test_reviews, test_scores):
 
 def main():
 	print("Running preprocessing...")
-	train_scores, test_scores, train_reviews, test_reviews, scores_vocab, reviews_vocab = get_data()
+	train_scores, test_scores, train_reviews, test_reviews, reviews_vocab = get_data()
 	print("Preprocessing complete.")
 
 	model_args = (len(reviews_vocab))
