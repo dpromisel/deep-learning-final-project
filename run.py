@@ -56,17 +56,17 @@ def main():
 	train_scores, test_scores, train_reviews, test_reviews, reviews_vocab = get_data()
 	print("Preprocessing complete.")
 
-	# model_args = (REVIEW_WINDOW_SIZE, len(reviews_vocab))
-	# model = Transformer_Seq2Seq(*model_args)
+	model_args = (REVIEW_WINDOW_SIZE, len(reviews_vocab))
+	model = Transformer_Seq2Seq(*model_args)
 
-	# # id2word = {v: k for k, v in scores_vocab.items()}
+	# id2word = {v: k for k, v in scores_vocab.items()}
 
-	# print("Training model.")
-	# train(model, train_reviews, train_scores)
-	# print("Training complete.")
+	print("Training model.")
+	train(model, train_reviews, train_scores)
+	print("Training complete.")
 
-	# loss, acc = test(model, test_reviews, test_scores, eng_padding_index)
-	# print(loss, acc)
+	loss, acc = test(model, test_reviews, test_scores, eng_padding_index)
+	print(loss, acc)
 
 if __name__ == '__main__':
    main()
