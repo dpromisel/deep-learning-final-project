@@ -27,7 +27,7 @@ def build_vocab(sentences):
 
 	all_words = sorted(list(set(tokens)))
 
-	vocab =  {word:i for i,word in enumerate(all_words)}
+	vocab =  {word:i for i, word in enumerate(all_words)}
 
 	return vocab
 
@@ -81,6 +81,15 @@ def read_data(file_name):
 
 	return reviews
 
+def word_to_id(reviews, word2id):
+
+	reviews_ids = []
+
+	for review in reviews:
+		ids = list(map(lambda x: word2id[x], review.split()))
+		reviews_ids.append(ids)
+
+	return reviews_ids
 
 def get_data():
 	"""
@@ -95,18 +104,24 @@ def get_data():
 	reviews, labels = clean_reviews(raw_reviews)
 
 	#3) Consolidate most common words from the training reviews into single set
-	split = int(len(reviews) * (1 - test_fraction))
-	train_reviews = reviews[:split]
-	token_set = build_token_set(train_reviews)
+	token_set = build_token_set(reviews)
 
 	#4) Create inputs and labels
 	inputs = build_inputs(reviews, token_set)
 
-	#5) Build Reviews Vocab
-	review_vocab = build_vocab(token_set)
+	#5) Build Word to Id and Id to Word dictionaries
+	id2word = {i: w for i, w in enumerate(list(token_set))}
+	word2id = {w: i for i, w in enumerate(list(token_set))}
 
 	#6) Split into test and train data
-	train_inputs, test_inputs = inputs[:split], inputs[split:]
+	split = int(len(reviews) * (1 - test_fraction))
+	train_words, test_words = inputs[:split], inputs[split:]
 	train_labels, test_labels = labels[:split], labels[split:]
 
-	return train_inputs, test_inputs, train_labels, test_labels, review_vocab
+	#7) Convert training and testing set from list of words to list of IDs
+	train_ids = word_to_id(train_words, word2id)
+	test_ids = word_to_id(test_words, word2id)
+
+	print(train_ids)
+
+	return train_ids, test_ids, train_labels, test_labels, word2id
