@@ -7,8 +7,9 @@ from model import Transformer_Seq2Seq
 import sys
 
 def train(model, train_reviews, train_scores):
+	model.batch_size = 1
 	batches = len(train_reviews) / model.batch_size
-
+	# print(train_reviews)
 	for i in range(int(batches)):
 		with tf.GradientTape() as tape:
 
@@ -18,7 +19,8 @@ def train(model, train_reviews, train_scores):
             #
 			# mask = english_batch[:, 1:] != eng_padding_index
 			# mask= tf.convert_to_tensor(mask, dtype=tf.float32)
-
+			print(review_batch)
+			print(score_batch)
 			call_result = model.call(review_batch, score_batch)
 
 			loss = model.loss_function(call_result, score_batch)
@@ -55,17 +57,16 @@ def main():
 	print("Running preprocessing...")
 	train_scores, test_scores, train_reviews, test_reviews, reviews_vocab = get_data()
 	print("Preprocessing complete.")
-
 	model_args = (len(reviews_vocab))
-	model = Transformer_Seq2Seq(*model_args)
+	model = Transformer_Seq2Seq(model_args)
 
 	# id2word = {v: k for k, v in scores_vocab.items()}
 
 	print("Training model.")
-	train(model, train_reviews, train_scores)
+	train(model, train_reviews, train_scores,reviews_vocab)
 	print("Training complete.")
 
-	loss, acc = test(model, test_reviews, test_scores, eng_padding_index)
+	loss, acc = test(model, test_reviews, test_scores)
 	print(loss, acc)
 
 if __name__ == '__main__':

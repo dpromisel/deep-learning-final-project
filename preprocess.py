@@ -36,7 +36,7 @@ def build_inputs(reviews, token_set):
 	for review in reviews:
 		review_tokens = [w for w in review.split() if w in token_set]
 		inputs.append(" ".join(review_tokens))
-	
+
 	return inputs
 
 def clean_reviews(raw_reviews):
@@ -53,14 +53,14 @@ def clean_reviews(raw_reviews):
 	return reviews, ratings
 
 def build_token_set(reviews, num_common=5000):
-	
+
 	tokens = []
 	for review in reviews:
 		tokens.extend(review.split())
-	
+
 	most_common = collections.Counter(tokens).most_common(num_common)
 	token_set = set([word[0] for word in most_common])
-	
+
 	return token_set
 
 def read_data(file_name):
@@ -86,7 +86,7 @@ def get_data():
 	"""
 
 	test_fraction = 0.1
-	
+
 	#1) Read Review Data for training and testing (see read_data)
 	raw_reviews = read_data(SAMPLE_FILE)
 
@@ -97,10 +97,9 @@ def get_data():
 	split = int(len(reviews) * (1 - test_fraction))
 	train_reviews = reviews[:split]
 	token_set = build_token_set(train_reviews)
-
 	#4) Create inputs and labels
 	inputs = build_inputs(reviews, token_set)
-
+	# print(inputs)
 	#5) Build Reviews Vocab
 	review_vocab = build_vocab(token_set)
 

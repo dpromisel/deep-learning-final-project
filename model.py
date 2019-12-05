@@ -7,11 +7,11 @@ class Transformer_Seq2Seq(tf.keras.Model):
 
 		super(Transformer_Seq2Seq, self).__init__()
 
-		self.review_vocab_size = self.input_vocab_size # The size of vocab from input reviews (preprocess.py)
+		self.input_vocab_size = input_vocab_size # The size of vocab from input reviews (preprocess.py)
 		self.score_size = 5 # The range of possible amazon customer reviews
 
 		# REMOVE WINDOW SIZE!
-		# self.review_window_size = self.review_window_size # The review window size
+		self.review_window_size = 20 # The review window size
 
 		self.batch_size = 100
 		self.embedding_size = 100 # CHANGE
