@@ -3,22 +3,22 @@ import tensorflow as tf
 import transformer_funcs as transformer
 
 class Transformer_Seq2Seq(tf.keras.Model):
-	def __init__(self, review_window_size, input_vocab_size):
+	def __init__(self, input_vocab_size):
 
 		super(Transformer_Seq2Seq, self).__init__()
 
-		self.review_vocab_size = self.input_vocab_size # The size of vocab from input reviews (preprocess.py)
+		self.input_vocab_size = input_vocab_size # The size of vocab from input reviews (preprocess.py)
 		self.score_size = 5 # The range of possible amazon customer reviews
 
-		self.review_window_size = self.review_window_size # The review window size
+		# REMOVE WINDOW SIZE!
+		self.review_window_size = 20 # The review window size
 
 		self.batch_size = 100
 		self.embedding_size = 100 # CHANGE
 
 		self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
-
-		# Define english and french embedding layers:
+		# Define review embedding layers:
 		self.review_embedding = tf.Variable(tf.random.truncated_normal(shape=[self.input_vocab_size, self.embedding_size], stddev=0.1, dtype=tf.float32))
 
 		# Create positional encoder layer for reviews
