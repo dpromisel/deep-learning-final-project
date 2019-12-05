@@ -103,7 +103,7 @@ def get_data():
 	reviews, labels = clean_reviews(raw_reviews)
 
 	#3) Consolidate most common words from the training reviews into single set
-]	token_set = build_token_set(reviews)
+	token_set = build_token_set(reviews)
 
 	#4) Create inputs and labels
 	inputs = build_inputs(reviews, token_set)
@@ -112,15 +112,16 @@ def get_data():
 	id2word = {i: w for i, w in enumerate(list(token_set))}
 	word2id = {w: i for i, w in enumerate(list(token_set))}
 
+	label_nums = [int(w) for i, w in enumerate(labels)]
+
 	#6) Split into test and train data
 	split = int(len(reviews) * (1 - test_fraction))
 	train_words, test_words = inputs[:split], inputs[split:]
-	train_labels, test_labels = labels[:split], labels[split:]
+	train_labels, test_labels = label_nums[:split], label_nums[split:]
 
 	#7) Convert training and testing set from list of words to list of IDs
 	train_ids = word_to_id(train_words, word2id)
 	test_ids = word_to_id(test_words, word2id)
 
-	print(train_ids)
 
 	return train_ids, test_ids, train_labels, test_labels, word2id
