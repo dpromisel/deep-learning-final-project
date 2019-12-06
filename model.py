@@ -13,7 +13,7 @@ class Transformer_Seq2Seq(tf.keras.Model):
 		# REMOVE WINDOW SIZE!
 		self.review_window_size = 20 # The review window size
 
-		self.batch_size = 100
+		self.batch_size = 20
 		self.embedding_size = 100 # CHANGE
 
 		self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
@@ -40,16 +40,21 @@ class Transformer_Seq2Seq(tf.keras.Model):
 		:param decoder_input: batched scores
 		:return prbs: The 3d probabilities as a tensor, [batch_size x window_size x score_size]
 		"""
-
 		encode_embedding = tf.nn.embedding_lookup(self.review_embedding, encoder_input)
-
+		print(encode_embedding.shape)
 		review_pos_embedding = self.review_pos_embedding(encode_embedding)
+		print("Review embedding")
+		print(review_pos_embedding)
+
 		encoding = self.encoder(review_pos_embedding)
 
 		decoding = self.decoder(decoder_input,encoding)
+		print("Decoding")
 
 		dense1 = self.dense1(decoding)
+		print("Dense1")
 		dense2 = self.dense2(dense1)
+		print("Dense2")
 
 		return dense2
 
