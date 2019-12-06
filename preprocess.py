@@ -33,7 +33,7 @@ def pad_corpus(reviews):
 		review = review.split()
 		padded_REVIEW = review[:REVIEW_WINDOW_SIZE]
 		padded_REVIEW += [STOP_TOKEN] + [PAD_TOKEN] * (REVIEW_WINDOW_SIZE - len(padded_REVIEW)-1)
-		REVIEW_padded_sentences.append(padded_REVIEW)
+		REVIEW_padded_sentences.append(" ".join(padded_REVIEW))
 
 	return REVIEW_padded_sentences
 
@@ -128,7 +128,6 @@ def get_data():
 	#2) Clean all reviews (remove punctutaion and convert to lower case)
 	reviews, labels = clean_reviews(raw_reviews)
 	reviews = pad_corpus(reviews)
-	print(reviews)
 
 	#3) Consolidate most common words from the training reviews into single set
 	token_set = build_token_set(reviews)
