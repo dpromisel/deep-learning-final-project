@@ -9,7 +9,33 @@ from nltk.tokenize import RegexpTokenizer
 ##########DO NOT CHANGE#####################
 REVIEW_FILE = "./data/amazon_camera_reviews.tsv"
 SAMPLE_FILE = "./data/sample_us.tsv"
+
+PAD_TOKEN = "*PAD*"
+STOP_TOKEN = "*STOP*"
+START_TOKEN = "*START*"
+UNK_TOKEN = "*UNK*"
+REVIEW_WINDOW_SIZE = 20
 ##########DO NOT CHANGE#####################
+
+def pad_corpus(reviews):
+	"""
+	DO NOT CHANGE:
+
+	arguments are lists of REVIEW, ENGLISH sentences. Returns [REVIEW-sents, ENGLISH-sents]. The
+	text is given an initial "*STOP*".  All sentences are padded with "*STOP*" at
+	the end.
+
+	:param review: list of reviews
+	:return: A tuple of: (list of padded sentences for French, list of padded sentences for English)
+	"""
+	REVIEW_padded_sentences = []
+	for review in reviews:
+		review = review.split()
+		padded_REVIEW = review[:REVIEW_WINDOW_SIZE]
+		padded_REVIEW += [STOP_TOKEN] + [PAD_TOKEN] * (REVIEW_WINDOW_SIZE - len(padded_REVIEW)-1)
+		REVIEW_padded_sentences.append(padded_REVIEW)
+
+	return REVIEW_padded_sentences
 
 def build_vocab(sentences):
 	"""
@@ -101,6 +127,8 @@ def get_data():
 
 	#2) Clean all reviews (remove punctutaion and convert to lower case)
 	reviews, labels = clean_reviews(raw_reviews)
+	reviews = pad_corpus(reviews)
+	print(reviews)
 
 	#3) Consolidate most common words from the training reviews into single set
 	token_set = build_token_set(reviews)

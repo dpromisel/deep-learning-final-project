@@ -171,7 +171,7 @@ class Transformer_Block(tf.keras.layers.Layer):
 		If the multi_headed==True, the model uses multiheaded attention (Only 2470 students must implement this)
 
 		:param inputs: tensor of [BATCH_SIZE x (ENG/FRN)_WINDOW_SIZE x EMBEDDING_SIZE ]
-		:context: tensor of [BATCH_SIZE x FRENCH_WINDOW_SIZE x EMBEDDING_SIZE ] or None
+		:context: tensor of [BATCH_SIZE x REVIEW_WINDOW_SIZE x EMBEDDING_SIZE ] or None
 			default=None, This is context from the encoder to be used as Keys and Values in self-attention function
 		"""
 
