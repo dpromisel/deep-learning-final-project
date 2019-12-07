@@ -11,10 +11,10 @@ def train(model, train_reviews, train_scores):
     batches = len(train_reviews) / model.batch_size
     for i in range(int(batches)):
         with tf.GradientTape() as tape:
-            review_batch = train_reviews[i * model.batch_size : (i + 1) * model.batch_size]
+            review_batch = tf.convert_to_tensor(train_reviews[i * model.batch_size : (i + 1) * model.batch_size])
             score_batch = train_scores[i * model.batch_size : (i + 1) * model.batch_size]
 
-            print(review_batch)
+            print(review_batch.shape)
             call_result = model.call(review_batch)
             loss = model.loss_function(call_result, score_batch)
             print(loss)
