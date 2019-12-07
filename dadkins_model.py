@@ -75,16 +75,13 @@ class TBlock(tf.keras.Model):
     def call(self, inputs):
         print("Generating attention")
         attention = self.Attn(inputs,inputs,inputs)[0]
-        print("Attention: ", attention)
         # TODO: add layer normalization
         # norm1 = self.Norm1(attention + inputs)
         # print("Norm1: ", norm1)
 
         dense1 = self.Dense1(attention)
-        print("Dense1: ", dense1)
 
         dense2 = self.Dense2(dense1)
-        print("Dense2: ", dense2)
 
         return dense2
 
@@ -109,7 +106,7 @@ class PositionEncodingLayer(tf.keras.layers.Layer):
 		return x+self.positional_embeddings
 
 class SentimentModel(tf.keras.Model):
-    def __init__(self, batch_size=200, input_vocab_size=1000, embedding_size=100, max_length = 200):
+    def __init__(self, batch_size=200, input_vocab_size=1000, embedding_size=100, max_length = 20):
         super(SentimentModel,self).__init__()
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
         self.batch_size = batch_size
@@ -120,12 +117,15 @@ class SentimentModel(tf.keras.Model):
 
 
     def call(self, inputs):
-        print(inputs.shape)
-        inputs = tf.reshape(inputs, [-1])
+        print("Inputs: ", inputs.shape)
         embedded = tf.nn.embedding_lookup(self.WordEmbedding, inputs)
+        print("Embedding: ", embedded.shape)
+
         pos_embedding = self.Pos(embedded)
-        print("Pos_embedding: ", pos_embedding)
+        print("Pos_embedding: ", pos_embedding.shape)
         encoded = self.Transformer(pos_embedding)
+        print("Encoded: ", encoded.shape)
+
         classes = self.Classification(encoded)
         return classes
 
