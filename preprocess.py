@@ -31,7 +31,7 @@ def pad_corpus(reviews):
 	REVIEW_padded_sentences = []
 	for review in reviews:
 		review = review.split()
-		padded_REVIEW = review[:REVIEW_WINDOW_SIZE]
+		padded_REVIEW = review[:REVIEW_WINDOW_SIZE-1]
 		padded_REVIEW += [STOP_TOKEN] + [PAD_TOKEN] * (REVIEW_WINDOW_SIZE - len(padded_REVIEW)-1)
 		REVIEW_padded_sentences.append(" ".join(padded_REVIEW))
 
