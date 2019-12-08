@@ -14,51 +14,28 @@ class SentimentModelLSTM(tf.keras.Model):
 		self.review_window_size = 20 # The review window size
 
 		self.batch_size = 20
-		self.embedding_size = 100 # CHANGE
+		self.embedding_size = 64 # CHANGE
 
 		self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
-
-		# Define review embedding layers:
-		self.review_embedding = tf.Variable(tf.random.truncated_normal(shape=[self.input_vocab_size, self.embedding_size], stddev=0.1, dtype=tf.float32))
-
-		# Create positional encoder layer for reviews
-		self.review_pos_embedding = transformer.Position_Encoding_Layer(self.review_window_size, self.embedding_size)
-
-		# Define encoder and decoder layers:
-		self.encoder = transformer.Transformer_Block(self.embedding_size, False, False)
-		self.decoder = transformer.Transformer_Block(self.embedding_size, True, False)
-
-		# Define dense layer(s)
-		self.dense1 = tf.keras.layers.Dense(units=self.embedding_size, activation=tf.nn.relu)
-		self.dense2 = tf.keras.layers.Dense(units=self.score_size, activation=tf.nn.softmax)
-
+		self.embedding = tf.Variable(tf.random.truncated_normal(shape=[self.input_vocab_size, self.embedding_size], stddev=0.1, dtype=tf.float32))
+		self.bidirectional = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(self.embedding_size))
+		self.dense1 = tf.keras.layers.Dense(self.embedding_size, activation='relu')
+		self.dense2 = tf.keras.layers.Dense(1, activation='sigmoid')
 
 	@tf.function
-	def call(self, encoder_input, decoder_input):
+	def call(self, inputs):
 		"""
 		:param encoder_input: batched ids corresponding to reviews
 		:param decoder_input: batched scores
-		:return prbs: The 3d probabilities as a tensor, [batch_size x window_size x score_size]
+		:return prbs: The 2d probabilities as a tensor, [batch_size x score size]
 		"""
-		encode_embedding = tf.nn.embedding_lookup(self.review_embedding, encoder_input)
-		print(encode_embedding.shape)
-		review_pos_embedding = self.review_pos_embedding(encode_embedding)
-		print("Review embedding")
-		print(review_pos_embedding)
-
-		encoding = self.encoder(review_pos_embedding)
-
-		decoding = self.decoder(decoder_input,encoding)
-		print("Decoding")
-
-		dense1 = self.dense1(decoding)
-		print("Dense1")
+		embedding = tf.nn.embedding_lookup(self.embedding, inputs)
+		bidirectional = self.bidirectional(embedding)
+		dense1 = self.dense1(bidirectional)
 		dense2 = self.dense2(dense1)
-		print("Dense2")
-
 		return dense2
 
-	def accuracy_function(self, prbs, labels, mask):
+	def accuracy_function(self, predictions, labels):
 		"""
 		:param prbs:  float tensor, word prediction probabilities [batch_size x window_size x score_size]
 		:param labels:  integer tensor, word prediction labels [batch_size x window_size]
@@ -66,12 +43,11 @@ class SentimentModelLSTM(tf.keras.Model):
 		:return: scalar tensor of accuracy of the batch between 0 and 1
 		"""
 
-		decoded_symbols = tf.argmax(input=prbs, axis=2)
-		accuracy = tf.reduce_mean(tf.boolean_mask(tf.cast(tf.equal(decoded_symbols, labels), dtype=tf.float32),mask))
+		accuracy = np.mean(np.equal(predictions, labels))
 		return accuracy
 
 
-	def loss_function(self, prbs, labels, mask):
+	def loss_function(self, prbs, labels):
 		"""
 		Calculates the model cross-entropy loss after one forward pass
 
@@ -80,7 +56,5 @@ class SentimentModelLSTM(tf.keras.Model):
 		:param mask:  tensor that acts as a padding mask [batch_size x window_size]
 		:return: the loss of the model as a tensor
 		"""
-
-		# Note: you can reuse this from rnn_model.
-		loss = tf.reduce_mean(tf.boolean_mask(tf.keras.losses.sparse_categorical_crossentropy(labels, prbs),mask))
+		loss = tf.reduce_mean(tf.keras.losses.BinaryCrossentropy()(prbs, labels))
 		return loss

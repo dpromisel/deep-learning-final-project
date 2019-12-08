@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import numpy as np
 from preprocess import *
-from model import Transformer_Seq2Seq
+from model import SentimentModelLSTM
 import sys
 
 def train(model, train_reviews, train_scores):
@@ -18,54 +18,38 @@ def train(model, train_reviews, train_scores):
 
 			# mask = english_batch[:, 1:] != eng_padding_index
 			# mask= tf.convert_to_tensor(mask, dtype=tf.float32)
-			call_result = model.call(review_batch, score_batch)
+			call_result = model.call(review_batch)
 
-			loss = model.loss_function(call_result, score_batch)
-			print(loss)
+			loss = model.loss_function(tf.convert_to_tensor(call_result, dtype=np.float32), tf.convert_to_tensor(score_batch, dtype=np.float32))
 
 		gradients = tape.gradient(loss, model.trainable_variables)
 		model.optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
 def test(model, test_reviews, test_scores):
-	batches = len(test_reviews) / model.batch_size
-
-	loss = 0.0
-	accuracy = 0.0
-	num_correct_words = 0
-	total_num_non_padding_words = 0
-
-	for i in range(int(batches)):
-		# slice arrays by batch size
-		review_batch = test_reviews[i * model.batch_size : (i + 1) * model.batch_size]
-		score_batch = test_scores[i * model.batch_size : (i + 1) * model.batch_size]
-
-		# mask = english_batch[:, 1:] != eng_padding_index
-        #
-		# mask= tf.convert_to_tensor(mask, dtype=tf.float32)
-
-		call_result = model.call(review_batch, score_batch)
-		loss += model.loss_function(call_result, score_batch)
-
-		accuracy = model.accuracy_function(call_result, score_batch)
-
-	return np.exp(loss / int(batches)), accuracy
+	call_result = model.call(test_reviews)
+	accuracy = model.accuracy_function(np.array(call_result)>0.5, np.array(test_scores)>3)
+	return accuracy
 
 def main():
 	print("Running preprocessing...")
 	train_reviews, test_reviews, train_scores, test_scores, reviews_vocab = get_data()
 	print("Preprocessing complete.")
-	print("REVIEW VOCAB: ", len(reviews_vocab))
-	model_args = (len(reviews_vocab))
-	model = SentimentModelLSTM(model_args)
+	print("REVIEW VOCAB LENGTH: ", len(reviews_vocab))
+
+	model = SentimentModelLSTM(len(reviews_vocab))
+
 
 	# id2word = {v: k for k, v in scores_vocab.items()}
 
 	print("Training model.")
+	# print(train_reviews)
+	# model.fit(np.array(train_reviews), (np.array(train_scores) > 3), validation_split=0.1, epochs = 3)
+
 	train(model, train_reviews, train_scores)
 	print("Training complete.")
 
-	loss, acc = test(model, test_reviews, test_scores)
-	print(loss, acc)
+	acc = test(model, test_reviews, test_scores)
+	print(acc)
 
 if __name__ == '__main__':
    main()
