@@ -56,7 +56,7 @@ def main():
 	print("Preprocessing complete.")
 	print("REVIEW VOCAB: ", len(reviews_vocab))
 	model_args = (len(reviews_vocab))
-	model = Transformer_Seq2Seq(model_args)
+	model = SentimentModelLSTM(model_args)
 
 	# id2word = {v: k for k, v in scores_vocab.items()}
 

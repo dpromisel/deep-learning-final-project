@@ -2,10 +2,10 @@ import numpy as np
 import tensorflow as tf
 import transformer_funcs as transformer
 
-class Transformer_Seq2Seq(tf.keras.Model):
+class SentimentModelLSTM(tf.keras.Model):
 	def __init__(self, input_vocab_size):
 
-		super(Transformer_Seq2Seq, self).__init__()
+		super(SentimentModelLSTM, self).__init__()
 
 		self.input_vocab_size = input_vocab_size # The size of vocab from input reviews (preprocess.py)
 		self.score_size = 5 # The range of possible amazon customer reviews
