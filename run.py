@@ -31,9 +31,17 @@ def train(model, train_reviews, train_scores):
 		model.optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
 def test(model, test_reviews, test_scores):
-	call_result = model.call(test_reviews)
-	accuracy = model.accuracy_function(np.array(call_result)>0.5, np.array(test_scores)>3)
-	return accuracy
+	batches = len(test_reviews) / model.batch_size
+
+	accs = []
+	for i in range(int(batches)):
+		review_batch = test_reviews[i * model.batch_size : (i + 1) * model.batch_size]
+		score_batch = test_reviews[i * model.batch_size : (i + 1) * model.batch_size]
+		call_result = model.call(review_batch)
+		accuracy = model.accuracy_function(np.array(call_result)>0.5, np.array(test_scores)>3)
+		accs.append(accuracy)
+		print(accuracy)
+	return np.mean(accs)
 
 def main():
 	print("Running preprocessing...")

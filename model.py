@@ -1,6 +1,5 @@
 import numpy as np
 import tensorflow as tf
-import transformer_funcs as transformer
 
 class SentimentModelLSTM(tf.keras.Model):
 	def __init__(self, input_vocab_size):
