@@ -31,9 +31,11 @@ def pad_corpus(reviews):
 	REVIEW_padded_sentences = []
 	for review in reviews:
 		review = review.split()
-		padded_REVIEW = review[:REVIEW_WINDOW_SIZE-1]
+		padded_REVIEW = review[:REVIEW_WINDOW_SIZE]
 		padded_REVIEW += [STOP_TOKEN] + [PAD_TOKEN] * (REVIEW_WINDOW_SIZE - len(padded_REVIEW)-1)
-		REVIEW_padded_sentences.append(" ".join(padded_REVIEW))
+		padded_REVIEW = " ".join(padded_REVIEW)
+
+		REVIEW_padded_sentences.append(padded_REVIEW)
 
 	return REVIEW_padded_sentences
 
@@ -112,6 +114,10 @@ def word_to_id(reviews, word2id):
 
 	for review in reviews:
 		ids = list(map(lambda x: word2id[x], review.split()))
+		if (len(ids) > REVIEW_WINDOW_SIZE):
+			ids = ids[:REVIEW_WINDOW_SIZE]
+		if len(ids) < REVIEW_WINDOW_SIZE:
+			ids += [0] * (REVIEW_WINDOW_SIZE - len(ids))
 		reviews_ids.append(ids)
 
 	return reviews_ids
@@ -123,7 +129,7 @@ def get_data():
 	test_fraction = 0.1
 
 	#1) Read Review Data for training and testing (see read_data)
-	raw_reviews = read_data(SAMPLE_FILE)
+	raw_reviews = read_data(REVIEW_FILE)
 
 	#2) Clean all reviews (remove punctutaion and convert to lower case)
 	reviews, labels = clean_reviews(raw_reviews)

@@ -5,9 +5,11 @@ import numpy as np
 from preprocess import *
 from model import SentimentModelLSTM
 import sys
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 def train(model, train_reviews, train_scores):
 	batches = len(train_reviews) / model.batch_size
+	print("NUM_BATCHES: ", batches)
 	# print(train_reviews)
 	for i in range(int(batches)):
 		with tf.GradientTape() as tape:
@@ -18,9 +20,12 @@ def train(model, train_reviews, train_scores):
 
 			# mask = english_batch[:, 1:] != eng_padding_index
 			# mask= tf.convert_to_tensor(mask, dtype=tf.float32)
-			call_result = model.call(review_batch)
+			call_result = model.call(tf.convert_to_tensor(review_batch))
 
-			loss = model.loss_function(tf.convert_to_tensor(call_result, dtype=np.float32), tf.convert_to_tensor(score_batch, dtype=np.float32))
+			loss = model.loss_function(tf.convert_to_tensor(call_result, dtype=np.float32), (tf.convert_to_tensor(score_batch, dtype=np.float32)-1)/4)
+			accuracy = model.accuracy_function(np.array(call_result)>0.5, np.array(score_batch)>3)
+
+			print(i, loss, accuracy)
 
 		gradients = tape.gradient(loss, model.trainable_variables)
 		model.optimizer.apply_gradients(zip(gradients, model.trainable_variables))
@@ -34,6 +39,10 @@ def main():
 	print("Running preprocessing...")
 	train_reviews, test_reviews, train_scores, test_scores, reviews_vocab = get_data()
 	print("Preprocessing complete.")
+
+
+
+
 	print("REVIEW VOCAB LENGTH: ", len(reviews_vocab))
 
 	model = SentimentModelLSTM(len(reviews_vocab))

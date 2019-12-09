@@ -11,9 +11,9 @@ class SentimentModelLSTM(tf.keras.Model):
 		self.score_size = 5 # The range of possible amazon customer reviews
 
 		# REMOVE WINDOW SIZE!
-		self.review_window_size = 20 # The review window size
+		self.review_window_size = 200 # The review window size
 
-		self.batch_size = 20
+		self.batch_size = 1000
 		self.embedding_size = 64 # CHANGE
 
 		self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
