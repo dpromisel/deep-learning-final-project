@@ -59,11 +59,17 @@ def test(model, test_reviews, test_scores, id2word):
 		# words = list(map(lambda x: id2word[x], review_batch[0]))
 		# print(words, call_result[0])
 	print("Misclassified as bad:")
-	print(misclassified_as_bad)
+	print_sort(misclassified_as_bad)
 	print("Misclassified as good:")
-	print(misclassified_as_good)
+	print_sort(misclassified_as_good)
 	return np.mean(accs)
-
+def print_sort(dict):
+	if (len(dict) > 0):
+		for key, value in sorted(dict.items(), key=lambda item: item[1])[::-1]:
+			if (not key == "*PAD*" and not key == "*STOP*"):
+				print("%s: %s" % (key, value))
+	else:
+		print("none")
 def main():
 	sample = "sample" in sys.argv
 	lstm = "lstm" in sys.argv
