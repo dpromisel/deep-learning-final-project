@@ -19,8 +19,10 @@ class SentimentModel(tf.keras.Model):
 		self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 		self.embedding = tf.Variable(tf.random.truncated_normal(shape=[self.input_vocab_size, self.embedding_size], stddev=0.1, dtype=tf.float32))
 		self.is_transformer = transformer
-		self.transformer = Transformer_Block(self.embedding_size, False)
-		self.bidirectional = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(self.embedding_size))
+		if (self.is_transformer):
+			self.transformer = Transformer_Block(self.embedding_size, False)
+		else:
+			self.bidirectional = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(self.embedding_size))
 
 		self.dense3 = tf.keras.layers.Dense(1, activation='sigmoid')
 
