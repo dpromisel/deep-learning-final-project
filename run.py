@@ -5,7 +5,7 @@ import numpy as np
 from preprocess import *
 from model import SentimentModel
 import sys
-# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 def train(model, train_reviews, train_scores, id2word):
 	batches = len(train_reviews) / model.batch_size
@@ -21,7 +21,7 @@ def train(model, train_reviews, train_scores, id2word):
 			call_result = model.call(tf.convert_to_tensor(review_batch))
 
 			if ((call_result[0] < 0.5 and score_batch[0] > 3) or (call_result[0] > 0.5 and score_batch[0] < 3)):
-				print(call_result[0].numpy(), " ".join(list(map(lambda x: id2word[x], review_batch[0]))))
+				print("Misclassified sample: ", call_result[0].numpy(), " ".join(list(map(lambda x: id2word[x], review_batch[0]))))
 
 			loss = model.loss_function(tf.convert_to_tensor(call_result, dtype=np.float32), (tf.convert_to_tensor(score_batch, dtype=np.float32)-1)/4)
 			accuracy = model.accuracy_function(np.array(call_result)>0.5, np.array(score_batch)>3)
@@ -48,16 +48,18 @@ def test(model, test_reviews, test_scores, id2word):
 
 def main():
 	sample = "sample" in sys.argv
+	lstm = "lstm" in sys.argv
+	print("Initializing " + ("lstm" if lstm else "transformer") + " model on " + ("sample" if sample else "full") + " dataset.")
 
-	print("Running preprocessing...")
+	print("Running preprocessing. This could take up to 5min.")
 	train_reviews, test_reviews, train_scores, test_scores, reviews_vocab, id2word = get_data(sample=sample)
 	print("Preprocessing complete.")
 
 	print("REVIEW VOCAB LENGTH: ", len(reviews_vocab))
 
-	model = SentimentModel(len(reviews_vocab), transformer=True, sample=sample)
+	model = SentimentModel(len(reviews_vocab), transformer=(not lstm), sample=sample)
 
-	print("Training model.")
+	print("Training model:")
 
 	train(model, train_reviews, train_scores, id2word)
 	print("Training complete.")
