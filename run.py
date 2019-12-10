@@ -5,9 +5,9 @@ import numpy as np
 from preprocess import *
 from model import SentimentModelLSTM
 import sys
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-def train(model, train_reviews, train_scores):
+def train(model, train_reviews, train_scores, id2word):
 	batches = len(train_reviews) / model.batch_size
 	print("NUM_BATCHES: ", batches)
 	# print(train_reviews)
@@ -22,30 +22,37 @@ def train(model, train_reviews, train_scores):
 			# mask= tf.convert_to_tensor(mask, dtype=tf.float32)
 			call_result = model.call(tf.convert_to_tensor(review_batch))
 
+			if (call_result[0] < 0.5 and score_batch[0] > 3):
+				print(call_result[0])
+				print(list(map(lambda x: id2word[x], review_batch[0])))
+
 			loss = model.loss_function(tf.convert_to_tensor(call_result, dtype=np.float32), (tf.convert_to_tensor(score_batch, dtype=np.float32)-1)/4)
 			accuracy = model.accuracy_function(np.array(call_result)>0.5, np.array(score_batch)>3)
+			if (i % 50 == 0):
+				print(i, loss, accuracy)
 
-			print(i, loss, accuracy)
 
 		gradients = tape.gradient(loss, model.trainable_variables)
 		model.optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
-def test(model, test_reviews, test_scores):
+def test(model, test_reviews, test_scores, id2word):
 	batches = len(test_reviews) / model.batch_size
 
 	accs = []
 	for i in range(int(batches)):
 		review_batch = test_reviews[i * model.batch_size : (i + 1) * model.batch_size]
-		score_batch = test_reviews[i * model.batch_size : (i + 1) * model.batch_size]
-		call_result = model.call(review_batch)
-		accuracy = model.accuracy_function(np.array(call_result)>0.5, np.array(test_scores)>3)
+		score_batch = test_scores[i * model.batch_size : (i + 1) * model.batch_size]
+		call_result = model.call(tf.convert_to_tensor(review_batch))
+		accuracy = model.accuracy_function(np.array(call_result)>0.5, np.array(score_batch)>3)
 		accs.append(accuracy)
-		print(accuracy)
+		# words = list(map(lambda x: id2word[x], review_batch[0]))
+		#
+		# print(words, call_result[0])
 	return np.mean(accs)
 
 def main():
 	print("Running preprocessing...")
-	train_reviews, test_reviews, train_scores, test_scores, reviews_vocab = get_data()
+	train_reviews, test_reviews, train_scores, test_scores, reviews_vocab, id2word = get_data()
 	print("Preprocessing complete.")
 
 
@@ -62,11 +69,12 @@ def main():
 	# print(train_reviews)
 	# model.fit(np.array(train_reviews), (np.array(train_scores) > 3), validation_split=0.1, epochs = 3)
 
-	train(model, train_reviews, train_scores)
+	train(model, train_reviews, train_scores, id2word)
 	print("Training complete.")
 
-	acc = test(model, test_reviews, test_scores)
+	acc = test(model, test_reviews, test_scores, id2word)
 	print(acc)
+
 
 if __name__ == '__main__':
    main()
