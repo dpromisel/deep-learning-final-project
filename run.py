@@ -37,7 +37,7 @@ def test(model, test_reviews, test_scores, id2word):
 
 	accs = []
 	misclassified_as_good = []
-	misclassified_as_bad
+	misclassified_as_bad = []
 	for i in range(int(batches)):
 		review_batch = test_reviews[i * model.batch_size : (i + 1) * model.batch_size]
 		score_batch = test_scores[i * model.batch_size : (i + 1) * model.batch_size]
