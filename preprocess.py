@@ -117,7 +117,7 @@ def word_to_id(reviews, word2id):
 		if (len(ids) > REVIEW_WINDOW_SIZE):
 			ids = ids[:REVIEW_WINDOW_SIZE]
 		if len(ids) < REVIEW_WINDOW_SIZE:
-			ids += [0] * (REVIEW_WINDOW_SIZE - len(ids))
+			ids += [word2id[PAD_TOKEN]] * (REVIEW_WINDOW_SIZE - len(ids))
 		reviews_ids.append(ids)
 
 	return reviews_ids
@@ -129,7 +129,7 @@ def get_data():
 	test_fraction = 0.1
 
 	#1) Read Review Data for training and testing (see read_data)
-	raw_reviews = read_data(REVIEW_FILE)
+	raw_reviews = read_data(SAMPLE_FILE)
 
 	#2) Clean all reviews (remove punctutaion and convert to lower case)
 	reviews, labels = clean_reviews(raw_reviews)
@@ -149,6 +149,19 @@ def get_data():
 
 	#6) Split into test and train data
 	split = int(len(reviews) * (1 - test_fraction))
+
+	# indices = tf.range(start=0, limit=len(inputs), dtype=tf.int32)
+	# shuffled_indices = tf.random.shuffle(indices)
+	#
+	# inputs = tf.gather(inputs, shuffled_indices).numpy().tolist()
+	# label_nums = tf.gather(label_nums, shuffled_indices).numpy().tolist()
+	import random
+	c = list(zip(inputs, label_nums))
+
+	random.shuffle(c)
+
+	inputs, label_nums = zip(*c)	
+
 	train_words, test_words = inputs[:split], inputs[split:]
 	train_labels, test_labels = label_nums[:split], label_nums[split:]
 
@@ -157,4 +170,4 @@ def get_data():
 	test_ids = word_to_id(test_words, word2id)
 
 
-	return train_ids, test_ids, train_labels, test_labels, word2id
+	return train_ids, test_ids, train_labels, test_labels, word2id, id2word
