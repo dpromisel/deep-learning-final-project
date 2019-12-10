@@ -20,14 +20,13 @@ def train(model, train_reviews, train_scores, id2word):
 
 			call_result = model.call(tf.convert_to_tensor(review_batch))
 
-			if (call_result[0] < 0.5 and score_batch[0] > 3):
-				print(call_result[0])
-				print(list(map(lambda x: id2word[x], review_batch[0])))
+			if ((call_result[0] < 0.5 and score_batch[0] > 3) or (call_result[0] > 0.5 and score_batch[0] < 3)):
+				print(call_result[0].numpy(), " ".join(list(map(lambda x: id2word[x], review_batch[0]))))
 
 			loss = model.loss_function(tf.convert_to_tensor(call_result, dtype=np.float32), (tf.convert_to_tensor(score_batch, dtype=np.float32)-1)/4)
 			accuracy = model.accuracy_function(np.array(call_result)>0.5, np.array(score_batch)>3)
-			if (i % 50 == 0):
-				print(i, loss, accuracy)
+			if (i % (batches//20) == 0):
+				print(i, "| Loss: ", loss.numpy(), "| Acc: ", accuracy)
 
 
 		gradients = tape.gradient(loss, model.trainable_variables)
@@ -48,13 +47,15 @@ def test(model, test_reviews, test_scores, id2word):
 	return np.mean(accs)
 
 def main():
+	sample = "sample" in sys.argv
+
 	print("Running preprocessing...")
-	train_reviews, test_reviews, train_scores, test_scores, reviews_vocab, id2word = get_data()
+	train_reviews, test_reviews, train_scores, test_scores, reviews_vocab, id2word = get_data(sample=sample)
 	print("Preprocessing complete.")
 
 	print("REVIEW VOCAB LENGTH: ", len(reviews_vocab))
 
-	model = SentimentModel(len(reviews_vocab), transformer=True)
+	model = SentimentModel(len(reviews_vocab), transformer=True, sample=sample)
 
 	print("Training model.")
 
@@ -62,7 +63,7 @@ def main():
 	print("Training complete.")
 
 	acc = test(model, test_reviews, test_scores, id2word)
-	print(acc)
+	print("Final accuracy: ", acc)
 
 
 if __name__ == '__main__':

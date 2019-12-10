@@ -4,13 +4,16 @@ from transformer_funcs import Transformer_Block
 
 
 class SentimentModel(tf.keras.Model):
-	def __init__(self, input_vocab_size, transformer=True):
+	def __init__(self, input_vocab_size, transformer=True, sample=True):
 
 		super(SentimentModel, self).__init__()
 
 		self.input_vocab_size = input_vocab_size # The size of vocab from input reviews (preprocess.py)
 
-		self.batch_size = 1000
+		if (sample):
+			self.batch_size = 1
+		else:
+			self.batch_size = 1000
 		self.embedding_size = 64 # CHANGE
 
 		self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)

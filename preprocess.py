@@ -122,14 +122,17 @@ def word_to_id(reviews, word2id):
 
 	return reviews_ids
 
-def get_data():
+def get_data(sample):
 	"""
 	"""
 
 	test_fraction = 0.1
 
 	#1) Read Review Data for training and testing (see read_data)
-	raw_reviews = read_data(SAMPLE_FILE)
+	if (sample):
+		raw_reviews = read_data(SAMPLE_FILE)
+	else:
+		raw_reviers = read_data(REVIEW_FILE)
 
 	#2) Clean all reviews (remove punctutaion and convert to lower case)
 	reviews, labels = clean_reviews(raw_reviews)
