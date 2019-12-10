@@ -67,12 +67,11 @@ Adam optimizer with learning rate of 0.01. Batch size of 32. (same as paper)
 Dropout of 0.1 (but will be experimented with).
 Hidden layer sizes of 300 units.
 
-Our architecture will be as such:
+Our architecture is as such:
 An embedding layer.
-An encoding Transformer layer.
-A decoding Transformer layer.
-A positional embedding layer.
-Two (or more, as we experiment) dense layers, the first activated with Relu and the second with Softmax.
+A transformer OR bidirectional LSTM layer.
+A dense Sigmoid layer.
+
 Metrics
 What constitutes success?
 We consider success to be a model that will train on our data set and achieve ~70 accuracy on sentiment analysis
@@ -84,3 +83,8 @@ For assignments, we have looked at the accuracy of the model. Does the notion of
 Yes, we can check if the sentiment analysis of a review matches with whether the review is “positive” or “negative”
 If you are implementing an existing project, detail what the authors of that paper were hoping to find and how they quantified the results of their model.
 The authors were trying to develop an unsupervised NN that can detect sentiment in text, and used Amazon review ratings to analyze their accuracy
+
+## Results
+
+Transformer model: 77.6% accuracy.
+LSTM model: 76.8% accuracy.
