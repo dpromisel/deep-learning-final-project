@@ -33,7 +33,9 @@ def pad_corpus(reviews):
 		review = review.split()
 		padded_REVIEW = review[:REVIEW_WINDOW_SIZE]
 		padded_REVIEW += [STOP_TOKEN] + [PAD_TOKEN] * (REVIEW_WINDOW_SIZE - len(padded_REVIEW)-1)
-		REVIEW_padded_sentences.append(" ".join(padded_REVIEW))
+		padded_REVIEW = " ".join(padded_REVIEW)
+
+		REVIEW_padded_sentences.append(padded_REVIEW)
 
 	return REVIEW_padded_sentences
 
@@ -112,6 +114,10 @@ def word_to_id(reviews, word2id):
 
 	for review in reviews:
 		ids = list(map(lambda x: word2id[x], review.split()))
+		if (len(ids) > REVIEW_WINDOW_SIZE):
+			ids = ids[:REVIEW_WINDOW_SIZE]
+		if len(ids) < REVIEW_WINDOW_SIZE:
+			ids += [word2id[PAD_TOKEN]] * (REVIEW_WINDOW_SIZE - len(ids))
 		reviews_ids.append(ids)
 
 	return reviews_ids
@@ -144,11 +150,6 @@ def get_data():
 	#6) Split into test and train data
 	split = int(len(reviews) * (1 - test_fraction))
 
-	# indices = tf.range(start=0, limit=len(inputs), dtype=tf.int32)
-	# shuffled_indices = tf.random.shuffle(indices)
-	#
-	# inputs = tf.gather(inputs, shuffled_indices).numpy().tolist()
-	# label_nums = tf.gather(label_nums, shuffled_indices).numpy().tolist()
 	import random
 	c = list(zip(inputs, label_nums))
 
@@ -164,4 +165,4 @@ def get_data():
 	test_ids = word_to_id(test_words, word2id)
 
 
-	return train_ids, test_ids, train_labels, test_labels, word2id
+	return train_ids, test_ids, train_labels, test_labels, word2id, id2word
