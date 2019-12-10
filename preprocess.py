@@ -143,6 +143,19 @@ def get_data():
 
 	#6) Split into test and train data
 	split = int(len(reviews) * (1 - test_fraction))
+
+	# indices = tf.range(start=0, limit=len(inputs), dtype=tf.int32)
+	# shuffled_indices = tf.random.shuffle(indices)
+	#
+	# inputs = tf.gather(inputs, shuffled_indices).numpy().tolist()
+	# label_nums = tf.gather(label_nums, shuffled_indices).numpy().tolist()
+	import random
+	c = list(zip(inputs, label_nums))
+
+	random.shuffle(c)
+
+	inputs, label_nums = zip(*c)
+
 	train_words, test_words = inputs[:split], inputs[split:]
 	train_labels, test_labels = label_nums[:split], label_nums[split:]
 
