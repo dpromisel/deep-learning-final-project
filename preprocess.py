@@ -132,7 +132,7 @@ def get_data(sample):
 	if (sample):
 		raw_reviews = read_data(SAMPLE_FILE)
 	else:
-		raw_reviers = read_data(REVIEW_FILE)
+		raw_reviews = read_data(REVIEW_FILE)
 
 	#2) Clean all reviews (remove punctutaion and convert to lower case)
 	reviews, labels = clean_reviews(raw_reviews)
