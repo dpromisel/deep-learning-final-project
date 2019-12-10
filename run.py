@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import numpy as np
 from preprocess import *
-from model import SentimentModelLSTM
+from model import SentimentModel
 import sys
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -18,8 +18,6 @@ def train(model, train_reviews, train_scores, id2word):
 			review_batch = train_reviews[i * model.batch_size : (i + 1) * model.batch_size]
 			score_batch = train_scores[i * model.batch_size : (i + 1) * model.batch_size]
 
-			# mask = english_batch[:, 1:] != eng_padding_index
-			# mask= tf.convert_to_tensor(mask, dtype=tf.float32)
 			call_result = model.call(tf.convert_to_tensor(review_batch))
 
 			if (call_result[0] < 0.5 and score_batch[0] > 3):
@@ -46,7 +44,6 @@ def test(model, test_reviews, test_scores, id2word):
 		accuracy = model.accuracy_function(np.array(call_result)>0.5, np.array(score_batch)>3)
 		accs.append(accuracy)
 		# words = list(map(lambda x: id2word[x], review_batch[0]))
-		#
 		# print(words, call_result[0])
 	return np.mean(accs)
 
@@ -55,19 +52,11 @@ def main():
 	train_reviews, test_reviews, train_scores, test_scores, reviews_vocab, id2word = get_data()
 	print("Preprocessing complete.")
 
-
-
-
 	print("REVIEW VOCAB LENGTH: ", len(reviews_vocab))
 
-	model = SentimentModelLSTM(len(reviews_vocab))
-
-
-	# id2word = {v: k for k, v in scores_vocab.items()}
+	model = SentimentModel(len(reviews_vocab), transformer=True)
 
 	print("Training model.")
-	# print(train_reviews)
-	# model.fit(np.array(train_reviews), (np.array(train_scores) > 3), validation_split=0.1, epochs = 3)
 
 	train(model, train_reviews, train_scores, id2word)
 	print("Training complete.")

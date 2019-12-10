@@ -1,25 +1,26 @@
 import numpy as np
 import tensorflow as tf
+from transformer_funcs import Transformer_Block
 
-class SentimentModelLSTM(tf.keras.Model):
-	def __init__(self, input_vocab_size):
 
-		super(SentimentModelLSTM, self).__init__()
+class SentimentModel(tf.keras.Model):
+	def __init__(self, input_vocab_size, transformer=True):
+
+		super(SentimentModel, self).__init__()
 
 		self.input_vocab_size = input_vocab_size # The size of vocab from input reviews (preprocess.py)
-		self.score_size = 5 # The range of possible amazon customer reviews
-
-		# REMOVE WINDOW SIZE!
-		self.review_window_size = 200 # The review window size
 
 		self.batch_size = 1000
 		self.embedding_size = 64 # CHANGE
 
 		self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 		self.embedding = tf.Variable(tf.random.truncated_normal(shape=[self.input_vocab_size, self.embedding_size], stddev=0.1, dtype=tf.float32))
-		self.bidirectional = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(self.embedding_size))
-		self.dense1 = tf.keras.layers.Dense(self.embedding_size, activation='relu')
-		self.dense2 = tf.keras.layers.Dense(1, activation='sigmoid')
+		if (transformer):
+			self.bidirectional = Transformer_Block(self.embedding_size, False)
+		else:
+			self.bidirectional = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(self.embedding_size))
+
+		self.dense3 = tf.keras.layers.Dense(1, activation='sigmoid')
 
 	@tf.function
 	def call(self, inputs):
@@ -29,10 +30,13 @@ class SentimentModelLSTM(tf.keras.Model):
 		:return prbs: The 2d probabilities as a tensor, [batch_size x score size]
 		"""
 		embedding = tf.nn.embedding_lookup(self.embedding, inputs)
+
 		bidirectional = self.bidirectional(embedding)
-		dense1 = self.dense1(bidirectional)
-		dense2 = self.dense2(dense1)
-		return dense2
+
+
+		dense = self.dense3(tf.reduce_mean(bidirectional, axis=1))
+
+		return dense
 
 	def accuracy_function(self, predictions, labels):
 		"""
