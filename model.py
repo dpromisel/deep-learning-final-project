@@ -1,10 +1,10 @@
 import numpy as np
 import tensorflow as tf
-from transformer_funcs import Transformer_Block
+from transformer_funcs import Transformer_Block, Position_Encoding_Layer
 
 
 class SentimentModel(tf.keras.Model):
-	def __init__(self, input_vocab_size, transformer=True, sample=True):
+	def __init__(self, input_vocab_size, transformer=True, sample=True, review_text_length=20):
 
 		super(SentimentModel, self).__init__()
 
@@ -20,6 +20,7 @@ class SentimentModel(tf.keras.Model):
 		self.embedding = tf.Variable(tf.random.truncated_normal(shape=[self.input_vocab_size, self.embedding_size], stddev=0.1, dtype=tf.float32))
 		self.is_transformer = transformer
 		if (self.is_transformer):
+			self.pos_encoding = Position_Encoding_Layer(review_text_length, self.embedding_size)
 			self.transformer = Transformer_Block(self.embedding_size, False)
 		else:
 			self.bidirectional = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(self.embedding_size))
@@ -36,8 +37,9 @@ class SentimentModel(tf.keras.Model):
 		embedding = tf.nn.embedding_lookup(self.embedding, inputs)
 
 		if (self.is_transformer):
-			transformed = self.transformer(embedding)
-			dense = self.dense3(tf.reduce_mean(bidirectional, axis=1))
+			pos_encoded = self.pos_encoding(embedding)
+			transformed = self.transformer(pos_encoded)
+			dense = self.dense3(tf.reduce_mean(transformed, axis=1))
 		else:
 			bidirectional = self.bidirectional(embedding)
 			dense = self.dense3(bidirectional)

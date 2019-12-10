@@ -71,7 +71,7 @@ def test(model, test_reviews, test_scores, id2word):
 					else:
 						misclassified_as_good[word] = 1
 		accuracy = model.accuracy_function(np.array(call_result)>0.5, np.array(score_batch)>3)
-		print("Accuracy batch ", i, " | acc:", accuracy)
+		# print("Accuracy batch ", i, " | acc:", accuracy)
 
 		accs.append(accuracy)
 		# words = list(map(lambda x: id2word[x], review_batch[0]))
