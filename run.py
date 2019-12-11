@@ -6,6 +6,12 @@ from preprocess import *
 from model import SentimentModel
 from pylab import *
 import sys
+
+from keras.models import Model, Sequential
+from keras.layers import Dense, Embedding, Input, Dropout, concatenate, Layer, InputSpec, LSTM
+from keras import activations, initializers, regularizers, constraints
+
+from transformer_funcs import Transformer_Block, Position_Encoding_Layer
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 def visualize_data(title_, values, x_label = "none", y_label="none"):
@@ -32,9 +38,7 @@ def train(model, train_reviews, train_scores, id2word):
 
 			call_result = model.call(tf.convert_to_tensor(review_batch))
 
-
-
-			loss = model.loss_function(tf.convert_to_tensor(call_result, dtype=np.float32), (tf.convert_to_tensor(score_batch, dtype=np.float32)-1)/4)
+			loss = model.loss_function(tf.convert_to_tensor(call_result, dtype=np.float32), (tf.convert_to_tensor(np.array(score_batch)>3, dtype=tf.float32)))
 			losses.append(loss)
 			accuracy = model.accuracy_function(np.array(call_result)>0.5, np.array(score_batch)>3)
 			if (i % 50 == 0):
@@ -89,28 +93,88 @@ def print_sort(dict):
 				print("%s: %s" % (key, value))
 	else:
 		print("none")
+
+def TransformerSentimentModel(num_words=5000, max_length = 50, hidden_size = 256, embedding_size=64):
+	embedding_matrix = np.random.normal(0, 0.2, (num_words, embedding_size))
+	inputs = Input(shape=(max_length, ))
+	embedded = Embedding(num_words, embedding_size, weights=[embedding_matrix], trainable=True)(inputs)
+	dropout1 = Dropout(0.1)(embedded)
+	pos_encoding = Position_Encoding_Layer(max_length, embedding_size)(dropout1)
+	transformed = Transformer_Block(hidden_size, False)(pos_encoding)
+	dropout2 = Dropout(0.1)(tf.reduce_mean(transformed, axis=1))
+	dense1 = Dense(hidden_size, activation="relu")(dropout2)
+	dropout3 = Dropout(0.1)(dense1)
+	dense2 = Dense(1, activation="sigmoid")(dropout3) ## Output layer!
+	model = Model(inputs=inputs, outputs=dense2)
+	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['binary_accuracy'])
+	return model
+
+def LSTMSentimentModel(num_words=5000, max_length = 50, hidden_size = 256, embedding_size=64):
+	embedding_matrix = np.random.normal(0, 0.2, (num_words, embedding_size))
+	inputs = Input(shape=(max_length, ))
+	embedded = Embedding(num_words, embedding_size, weights=[embedding_matrix], trainable=True)(inputs)
+	dropout1 = Dropout(0.1)(embedded)
+	lstm1 = LSTM(hidden_size)(dropout1)
+	lstm2 = LSTM(hidden_size)(dropout1)
+	concatenated = concatenate([lstm1, lstm2])
+	dropout2 = Dropout(0.1)(concatenated)
+	dense1 = Dense(embedding_size, activation="relu")(dropout2)
+	dropout3 = Dropout(0.1)(dense1)
+	dense2 = Dense(1, activation="sigmoid")(dropout3) ## Output layer!
+	model = Model(inputs=inputs, outputs=dense2)
+	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['binary_accuracy'])
+	return model
+
 def main():
+	## CUSTOM HYPERPARAMETERS
+	max_length = 50
+
 	sample = "sample" in sys.argv
 	lstm = "lstm" in sys.argv
+
+	if (sample):
+		batch_size = 10
+	else:
+		batch_size = 1000
 	print("Initializing " + ("lstm" if lstm else "transformer") + " model on " + ("sample" if sample else "full") + " dataset.")
 
 	print("Running preprocessing. This could take up to 5min.")
-	train_reviews, test_reviews, train_scores, test_scores, reviews_vocab, id2word = get_data(sample=sample)
+	train_reviews, test_reviews, train_scores, test_scores, reviews_vocab, id2word = get_data(sample=sample, max_length=50)
 	print("Preprocessing complete.")
 
+	print("Good reviews: ", len(np.nonzero(np.array(train_scores)>3)[0]), "Bad reviews: ", len(np.nonzero(np.array(train_scores)<=3)[0]), "Total: ", len(train_scores))
+
+	if (lstm):
+		model = LSTMSentimentModel(num_words=len(reviews_vocab), max_length=max_length)
+	else:
+		model = TransformerSentimentModel(num_words=len(reviews_vocab), max_length=max_length)
+
 	print("REVIEW VOCAB LENGTH: ", len(reviews_vocab))
+	history = model.fit(np.array(train_reviews), np.array(train_scores)>3, batch_size=1000, epochs=5, shuffle = True, validation_split=0.30)
+	score, acc = model.evaluate(np.array(test_reviews), np.array(test_scores)>3, batch_size=10)
+	print('Test score:', score)
+	print('Test accuracy:', acc)
+	plt.plot(history.history['loss'])
+	plt.plot(history.history['val_loss'])
+	plt.title('Model loss')
+	plt.ylabel('Loss')
+	plt.xlabel('Epoch')
+	plt.legend(['Train', 'Test'], loc='upper left')
+	plt.show()
+	# print("Training model:")
+	#
+	# num_epochs = 10
+	# losses = []
+	# for i in range(0, num_epochs):
+	# 	epoch_losses = train(model, train_reviews, train_scores, id2word)
+	# 	losses.extend(epoch_losses)
+	#
+	# print("Training complete.")
 
-	model = SentimentModel(len(reviews_vocab), transformer=(not lstm), sample=sample)
+	# accs = test(model, test_reviews, test_scores, id2word)
+	# print("Final accuracy: ", np.mean(accs))
 
-	print("Training model:")
-
-	losses = train(model, train_reviews, train_scores, id2word)
-	print("Training complete.")
-
-	accs = test(model, test_reviews, test_scores, id2word)
-	print("Final accuracy: ", np.mean(accs))
-
-	visualize_data("Losses", losses, "training iteration", "loss")
+	# visualize_data("Losses", losses, "training iteration", "loss")
 
 
 if __name__ == '__main__':

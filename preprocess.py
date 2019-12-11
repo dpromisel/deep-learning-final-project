@@ -14,7 +14,6 @@ PAD_TOKEN = "*PAD*"
 STOP_TOKEN = "*STOP*"
 START_TOKEN = "*START*"
 UNK_TOKEN = "*UNK*"
-REVIEW_WINDOW_SIZE = 20
 ##########DO NOT CHANGE#####################
 
 
@@ -32,7 +31,7 @@ def remove_stop_word(reviews):
 		reviews_no_stop.append(str)
 	return reviews_no_stop
 
-def pad_corpus(reviews):
+def pad_corpus(reviews, max_length = 50):
 	"""
 	DO NOT CHANGE:
 
@@ -46,8 +45,8 @@ def pad_corpus(reviews):
 	REVIEW_padded_sentences = []
 	for review in reviews:
 		review = review.split()
-		padded_REVIEW = review[:REVIEW_WINDOW_SIZE]
-		padded_REVIEW += [STOP_TOKEN] + [PAD_TOKEN] * (REVIEW_WINDOW_SIZE - len(padded_REVIEW)-1)
+		padded_REVIEW = review[:max_length]
+		padded_REVIEW += [STOP_TOKEN] + [PAD_TOKEN] * (max_length - len(padded_REVIEW)-1)
 		padded_REVIEW = " ".join(padded_REVIEW)
 
 		REVIEW_padded_sentences.append(padded_REVIEW)
@@ -122,21 +121,21 @@ def read_data(file_name):
 
 	return reviews
 
-def word_to_id(reviews, word2id):
+def word_to_id(reviews, word2id, max_length = 50):
 
 	reviews_ids = []
 
 	for review in reviews:
 		ids = list(map(lambda x: word2id[x], review.split()))
-		if (len(ids) > REVIEW_WINDOW_SIZE):
-			ids = ids[:REVIEW_WINDOW_SIZE]
-		if len(ids) < REVIEW_WINDOW_SIZE:
-			ids += [word2id[PAD_TOKEN]] * (REVIEW_WINDOW_SIZE - len(ids))
+		if (len(ids) > max_length):
+			ids = ids[:max_length]
+		if len(ids) < max_length:
+			ids += [word2id[PAD_TOKEN]] * (max_length - len(ids))
 		reviews_ids.append(ids)
 
 	return reviews_ids
 
-def get_data(sample):
+def get_data(sample=True, max_length=50):
 	"""
 	"""
 
@@ -151,9 +150,9 @@ def get_data(sample):
 	#2) Clean all reviews (remove punctutaion and convert to lower case)
 	reviews, labels = clean_reviews(raw_reviews)
 	# print(type(reviews))
-	reviews = remove_stop_word(reviews)
+	# reviews = remove_stop_word(reviews)
 	# print(type(reviews))
-	reviews = pad_corpus(reviews)
+	reviews = pad_corpus(reviews, max_length=max_length)
 
 	#3) Consolidate most common words from the training reviews into single set
 	token_set = build_token_set(reviews)
@@ -179,8 +178,8 @@ def get_data(sample):
 	train_words, test_words = inputs[:split], inputs[split:]
 	train_labels, test_labels = label_nums[:split], label_nums[split:]
 	#7) Convert training and testing set from list of words to list of IDs
-	train_ids = word_to_id(train_words, word2id)
-	test_ids = word_to_id(test_words, word2id)
+	train_ids = word_to_id(train_words, word2id, max_length=max_length)
+	test_ids = word_to_id(test_words, word2id, max_length=max_length)
 	# total = 0
 	# for id in test_ids:
 	# 	pad_id = word2id[PAD_TOKEN]

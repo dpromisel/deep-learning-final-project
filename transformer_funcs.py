@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import numpy as np
-
+import keras
 
 def Self_Attention(K, V, Q, use_mask=False):
 	"""
@@ -45,7 +45,7 @@ def Self_Attention(K, V, Q, use_mask=False):
 	return tf.matmul(sm, V)
 
 
-class Atten_Head(tf.keras.layers.Layer):
+class Atten_Head(keras.layers.Layer):
 	def __init__(self, input_size, output_size, use_mask):
 		super(Atten_Head, self).__init__()
 
@@ -84,7 +84,7 @@ class Atten_Head(tf.keras.layers.Layer):
 
 
 
-class Multi_Headed(tf.keras.layers.Layer):
+class Multi_Headed(keras.layers.Layer):
 	def __init__(self, emb_sz, use_mask):
 		super(Three_Headed_Attention, self).__init__()
 
@@ -113,12 +113,12 @@ class Multi_Headed(tf.keras.layers.Layer):
 		return None
 
 
-class Feed_Forwards(tf.keras.layers.Layer):
+class Feed_Forwards(keras.layers.Layer):
 	def __init__(self, emb_sz):
 		super(Feed_Forwards, self).__init__()
 
-		self.layer_1 = tf.keras.layers.Dense(emb_sz,activation='relu')
-		self.layer_2 = tf.keras.layers.Dense(emb_sz)
+		self.layer_1 = keras.layers.Dense(emb_sz,activation='relu')
+		self.layer_2 = keras.layers.Dense(emb_sz)
 
 	@tf.function
 	def call(self, inputs):
@@ -136,7 +136,7 @@ class Feed_Forwards(tf.keras.layers.Layer):
 		layer_2_out = self.layer_2(layer_1_out)
 		return layer_2_out
 
-class Transformer_Block(tf.keras.layers.Layer):
+class Transformer_Block(keras.Model):
 	def __init__(self, emb_sz, is_decoder, multi_headed=False):
 		super(Transformer_Block, self).__init__()
 
@@ -148,7 +148,6 @@ class Transformer_Block(tf.keras.layers.Layer):
 
 		self.layer_norm = tf.keras.layers.LayerNormalization(axis=-1)
 
-	@tf.function
 	def call(self, inputs, context=None):
 		"""
 		This functions calls a transformer block.
@@ -192,7 +191,7 @@ class Transformer_Block(tf.keras.layers.Layer):
 
 		return tf.nn.relu(ff_norm)
 
-class Position_Encoding_Layer(tf.keras.layers.Layer):
+class Position_Encoding_Layer(keras.layers.Layer):
 	def __init__(self, window_sz, emb_sz):
 		super(Position_Encoding_Layer, self).__init__()
 		self.positional_embeddings = self.add_weight("pos_embed",shape=[window_sz, emb_sz])
