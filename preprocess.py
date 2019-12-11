@@ -4,8 +4,8 @@ import numpy as np
 import csv
 import nltk
 import collections
-from nltk.tokenize import RegexpTokenizer
-
+from nltk.tokenize import RegexpTokenizer,word_tokenize
+from nltk.corpus import stopwords
 ##########DO NOT CHANGE#####################
 REVIEW_FILE = "./data/amazon_camera_reviews.tsv"
 SAMPLE_FILE = "./data/sample_us.tsv"
@@ -16,6 +16,21 @@ START_TOKEN = "*START*"
 UNK_TOKEN = "*UNK*"
 REVIEW_WINDOW_SIZE = 20
 ##########DO NOT CHANGE#####################
+
+
+def remove_stop_word(reviews):
+	nltk.download('stopwords')
+	nltk.download('punkt')
+	stop_words = set(stopwords.words('english'))
+	reviews_no_stop = []
+	for review in reviews:
+		word_tokens = word_tokenize(review)
+		review_no_stop = [w for w in word_tokens if not w in stop_words]
+		str = ""
+		for rev in review_no_stop:
+			str+=rev
+		reviews_no_stop.append(str)
+	return reviews_no_stop
 
 def pad_corpus(reviews):
 	"""
@@ -71,7 +86,8 @@ def clean_reviews(raw_reviews):
 	ratings = []
 	reviews = []
 	tokenizer = RegexpTokenizer(r'\w+')
-
+	good_reviews = []
+	bad_reviews
 	for review in raw_reviews:
 		ratings.append(review["star_rating"])
 		review_text = review["review_headline"].lower() + " " + review["review_body"].lower()
@@ -136,6 +152,7 @@ def get_data(sample):
 
 	#2) Clean all reviews (remove punctutaion and convert to lower case)
 	reviews, labels = clean_reviews(raw_reviews)
+	# reviews = remove_stop_word(reviews)
 	reviews = pad_corpus(reviews)
 
 	#3) Consolidate most common words from the training reviews into single set
@@ -143,7 +160,6 @@ def get_data(sample):
 
 	#4) Create inputs and labels
 	inputs = build_inputs(reviews, token_set)
-
 	#5) Build Word to Id and Id to Word dictionaries
 	id2word = {i: w for i, w in enumerate(list(token_set))}
 	word2id = {w: i for i, w in enumerate(list(token_set))}
@@ -162,10 +178,7 @@ def get_data(sample):
 
 	train_words, test_words = inputs[:split], inputs[split:]
 	train_labels, test_labels = label_nums[:split], label_nums[split:]
-
 	#7) Convert training and testing set from list of words to list of IDs
 	train_ids = word_to_id(train_words, word2id)
 	test_ids = word_to_id(test_words, word2id)
-
-
 	return train_ids, test_ids, train_labels, test_labels, word2id, id2word
