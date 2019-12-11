@@ -19,16 +19,16 @@ REVIEW_WINDOW_SIZE = 20
 
 
 def remove_stop_word(reviews):
-	nltk.download('stopwords')
-	nltk.download('punkt')
+	# nltk.download('stopwords')
+	# nltk.download('punkt')
 	stop_words = set(stopwords.words('english'))
 	reviews_no_stop = []
 	for review in reviews:
 		word_tokens = word_tokenize(review)
-		review_no_stop = [w for w in word_tokens if not w in stop_words]
 		str = ""
-		for rev in review_no_stop:
-			str+=rev
+		for w in word_tokens:
+			if not w in stop_words:
+				str+=w
 		reviews_no_stop.append(str)
 	return reviews_no_stop
 
@@ -86,8 +86,6 @@ def clean_reviews(raw_reviews):
 	ratings = []
 	reviews = []
 	tokenizer = RegexpTokenizer(r'\w+')
-	good_reviews = []
-	bad_reviews
 	for review in raw_reviews:
 		ratings.append(review["star_rating"])
 		review_text = review["review_headline"].lower() + " " + review["review_body"].lower()
@@ -152,7 +150,9 @@ def get_data(sample):
 
 	#2) Clean all reviews (remove punctutaion and convert to lower case)
 	reviews, labels = clean_reviews(raw_reviews)
-	# reviews = remove_stop_word(reviews)
+	# print(type(reviews))
+	reviews = remove_stop_word(reviews)
+	# print(type(reviews))
 	reviews = pad_corpus(reviews)
 
 	#3) Consolidate most common words from the training reviews into single set
@@ -181,4 +181,11 @@ def get_data(sample):
 	#7) Convert training and testing set from list of words to list of IDs
 	train_ids = word_to_id(train_words, word2id)
 	test_ids = word_to_id(test_words, word2id)
+	# total = 0
+	# for id in test_ids:
+	# 	pad_id = word2id[PAD_TOKEN]
+	# 	stop_id = word2id[STOP_TOKEN]
+	# 	if id != pad_id and id != stop_id:
+	# 		total+=1
+	# print(total)
 	return train_ids, test_ids, train_labels, test_labels, word2id, id2word
