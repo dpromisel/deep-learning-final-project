@@ -6,9 +6,8 @@ Sentiment Analysis on Amazon Customer Reviews
 
 python3 run.py
 Args:
-"sample": runs on sample dataset (default is full)
-"transformer": runs with Transformer model (default)
-"lstm": runs with bidirectional LSTM model
+"sample/full": runs on sample or full dataset (default is full)
+"lstm/transformer": runs with bidirectional LSTM model or Transformer model (default is LSTM)
 
 ## Introduction
 

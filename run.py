@@ -8,10 +8,10 @@ from pylab import *
 import sys
 
 from keras.models import Model, Sequential
-from keras.layers import Dense, Embedding, Input, Dropout, concatenate, Layer, InputSpec, LSTM
+from keras.layers import Dense, Embedding, Input, Dropout, concatenate, Layer, InputSpec, LSTM, BatchNormalization
 from keras import activations, initializers, regularizers, constraints
 
-from transformer_funcs import Transformer_Block, Position_Encoding_Layer
+from transformer_funcs import Transformer_Block, Position_Encoding_Layer, Self_Attention, Atten_Head
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 def visualize_data(title_, values, x_label = "none", y_label="none"):
@@ -99,8 +99,29 @@ def TransformerSentimentModel(num_words=5000, max_length = 50, hidden_size = 256
 	inputs = Input(shape=(max_length, ))
 	embedded = Embedding(num_words, embedding_size, weights=[embedding_matrix], trainable=True)(inputs)
 	dropout1 = Dropout(0.1)(embedded)
-	pos_encoding = Position_Encoding_Layer(max_length, embedding_size)(dropout1)
-	transformed = Transformer_Block(hidden_size, False)(pos_encoding)
+	# pos_encoding = Position_Encoding_Layer(max_length, embedding_size)(dropout1)
+	transformed = Transformer_Block(hidden_size, False)(dropout1)
+
+	## Transformer Block
+	k_mat = tf.random.normal((embedding_size, embedding_size), 0, 0.2)
+	v_mat = tf.random.normal((embedding_size, embedding_size), 0, 0.2)
+	q_mat = tf.random.normal((embedding_size, embedding_size), 0, 0.2)
+
+	K = tf.tensordot(dropout1, k_mat, axes=1)
+	V = tf.tensordot(dropout1, v_mat, axes=1)
+	Q = tf.tensordot(dropout1, q_mat, axes=1)
+
+	atten_out = Self_Attention(K,V,Q)
+	atten_out+=dropout1
+	atten_normalized = BatchNormalization(axis=-1)(atten_out)
+
+	t_d1 = Dense(embedding_size,activation='relu')(atten_normalized)
+	t_d2 = Dense(embedding_size)(t_d1)
+	t_d2+=atten_normalized
+	transformed = activations.relu(BatchNormalization(axis=-1)(t_d2))
+
+	## End transformer block
+
 	dropout2 = Dropout(0.1)(tf.reduce_mean(transformed, axis=1))
 	dense1 = Dense(hidden_size, activation="relu")(dropout2)
 	dropout3 = Dropout(0.1)(dense1)
@@ -125,18 +146,20 @@ def LSTMSentimentModel(num_words=5000, max_length = 50, hidden_size = 256, embed
 	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['binary_accuracy'])
 	return model
 
+def convert_to_english(reviews, id2word):
+	for review in reviews:
+		english = " ".join(list(map(lambda x: id2word[x], review)))
+		print(english)
+
 def main():
 	## CUSTOM HYPERPARAMETERS
 	max_length = 50
+	num_epochs = 100
 
 	sample = "sample" in sys.argv
-	lstm = "lstm" in sys.argv
+	is_transformer = "transformer" in sys.argv
 
-	if (sample):
-		batch_size = 10
-	else:
-		batch_size = 1000
-	print("Initializing " + ("lstm" if lstm else "transformer") + " model on " + ("sample" if sample else "full") + " dataset.")
+	print("Initializing " + ("lstm" if not is_transformer else "transformer") + " model on " + ("sample" if sample else "full") + " dataset.")
 
 	print("Running preprocessing. This could take up to 5min.")
 	train_reviews, test_reviews, train_scores, test_scores, reviews_vocab, id2word = get_data(sample=sample, max_length=50)
@@ -144,14 +167,25 @@ def main():
 
 	print("Good reviews: ", len(np.nonzero(np.array(train_scores)>3)[0]), "Bad reviews: ", len(np.nonzero(np.array(train_scores)<=3)[0]), "Total: ", len(train_scores))
 
-	if (lstm):
+	if (not is_transformer):
 		model = LSTMSentimentModel(num_words=len(reviews_vocab), max_length=max_length)
 	else:
 		model = TransformerSentimentModel(num_words=len(reviews_vocab), max_length=max_length)
 
 	print("REVIEW VOCAB LENGTH: ", len(reviews_vocab))
-	history = model.fit(np.array(train_reviews), np.array(train_scores)>3, batch_size=1000, epochs=5, shuffle = True, validation_split=0.30)
-	score, acc = model.evaluate(np.array(test_reviews), np.array(test_scores)>3, batch_size=10)
+	if (not sample):
+		history = model.fit(np.array(train_reviews[:10000]), np.array(train_scores[:10000])>3, batch_size=1000, epochs=num_epochs, shuffle = True, validation_split=0.30)
+		score, acc = model.evaluate(np.array(test_reviews), np.array(test_scores)>3, batch_size=1000)
+	else:
+		history = model.fit(np.array(train_reviews), np.array(train_scores)>3, batch_size=10, epochs=num_epochs, shuffle = True, validation_split=0.30)
+		score, acc = model.evaluate(np.array(test_reviews), np.array(test_scores)>3, batch_size=10)
+
+	print(convert_to_english(train_reviews[-10:], id2word))
+
+	result = model.predict(np.array(train_reviews[-10:]))
+	print(result)
+
+
 	print('Test score:', score)
 	print('Test accuracy:', acc)
 	plt.plot(history.history['loss'])

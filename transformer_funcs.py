@@ -136,7 +136,7 @@ class Feed_Forwards(keras.layers.Layer):
 		layer_2_out = self.layer_2(layer_1_out)
 		return layer_2_out
 
-class Transformer_Block(keras.Model):
+class Transformer_Block(keras.layers.Layer):
 	def __init__(self, emb_sz, is_decoder, multi_headed=False):
 		super(Transformer_Block, self).__init__()
 
@@ -146,7 +146,7 @@ class Transformer_Block(keras.Model):
 		if self.is_decoder:
 			self.self_context_atten = Atten_Head(emb_sz,emb_sz,use_mask=False) if not multi_headed else Multi_Headed_Attention(emb_sz,use_mask=False)
 
-		self.layer_norm = tf.keras.layers.LayerNormalization(axis=-1)
+		self.layer_norm = keras.layers.BatchNormalization(axis=-1)
 
 	def call(self, inputs, context=None):
 		"""
@@ -194,7 +194,7 @@ class Transformer_Block(keras.Model):
 class Position_Encoding_Layer(keras.layers.Layer):
 	def __init__(self, window_sz, emb_sz):
 		super(Position_Encoding_Layer, self).__init__()
-		self.positional_embeddings = self.add_weight("pos_embed",shape=[window_sz, emb_sz])
+		self.positional_embeddings = self.add_weight("pos_embed",shape=[window_sz, emb_sz], trainable=True)
 
 	@tf.function
 	def call(self, x):
