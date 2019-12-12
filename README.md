@@ -2,6 +2,18 @@
 
 Sentiment Analysis on Amazon Customer Reviews
 
+## Code FAQ
+
+V1 (failed):
+Model.py implements our v1 (failed) sentiment models, which got to 80% accuracy on occasion but 90% of the time, resulted in classifying everything as a "good" review.
+
+Run.py shows the old scaffolding for that v1 commented out.
+
+V2:
+Our final iteration was implementing an LSTM dropout model with Keras' sequential model framework. We achieved 94% accuracy on our largest training run, using all of our 800k samples evenly.
+
+We also attempted to implement a Transformer model (TransformerSentimentModel) but could not get it to work in the Keras sequential environment, as this was different than our traditional experience and didn't know exactly what was causing the inheritance errors we encountered. The scaffolding, TransformerSentimentModel(), is in run.py.
+
 ## How to use
 
 python3 run.py
@@ -9,7 +21,7 @@ Args:
 "sample/full": runs on sample or full dataset (default is full)
 "lstm/transformer": runs with bidirectional LSTM model or Transformer model (default is LSTM)
 
-## Introduction
+## Background
 
 Two broad areas of research focusing on how to learn useful representations: supervised and unsupervised learning. Supervised learning, or the training of high-capacity models on large labeled datasets, is an integral aspect of deep learning, particularly with respect to image recognition and machine translation. Unsupervised learning, on the other hand, is becoming more prominent in the field because of its scalability on datasets that cannot easily be cleaned or labeled. However, despite recent advances including pre training a model on a dataset and then fine tuning it for a given task, purely unsupervised approaches still exhibit weaker performance than supervised models. The authors of this paper hypothesize that poor corpus sources (usually novels) combined with limited capacity of current models lead to representational underfitting and lossy representations, especially when conducting sentiment analysis of reviews of consumer goods, as reviews and novels have small corpus overlaps.
 Thus, this paper focuses on sentiment analysis and attempts to learn an unsupervised representation on a corpus of Amazon reviews. They do so with byte / character level language modelling due to its simplicity and generality, as well as to gauge if a low-level training objective can support high-level representations learning.
@@ -85,5 +97,5 @@ The authors were trying to develop an unsupervised NN that can detect sentiment 
 
 ## Results
 
-Transformer model: 77.6% accuracy.
-LSTM model: 76.8% accuracy.
+LSTM model: 93% accuracy.
+Transformer model: N/A.

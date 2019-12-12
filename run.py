@@ -154,7 +154,7 @@ def convert_to_english(reviews, id2word):
 def main():
 	## CUSTOM HYPERPARAMETERS
 	max_length = 50
-	num_epochs = 100
+	num_epochs = 25
 
 	sample = "sample" in sys.argv
 	is_transformer = "transformer" in sys.argv
@@ -174,7 +174,7 @@ def main():
 
 	print("REVIEW VOCAB LENGTH: ", len(reviews_vocab))
 	if (not sample):
-		history = model.fit(np.array(train_reviews[:10000]), np.array(train_scores[:10000])>3, batch_size=1000, epochs=num_epochs, shuffle = True, validation_split=0.30)
+		history = model.fit(np.array(train_reviews), np.array(train_scores)>3, batch_size=1000, epochs=num_epochs, shuffle = True, validation_split=0.30)
 		score, acc = model.evaluate(np.array(test_reviews), np.array(test_scores)>3, batch_size=1000)
 	else:
 		history = model.fit(np.array(train_reviews), np.array(train_scores)>3, batch_size=10, epochs=num_epochs, shuffle = True, validation_split=0.30)
