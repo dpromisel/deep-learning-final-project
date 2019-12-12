@@ -1,0 +1,3 @@
+data/amazon_camera_reviews.tsv
+*.DS_Store
+__pycache__
