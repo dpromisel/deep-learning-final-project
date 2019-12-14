@@ -9,7 +9,9 @@ python3 run.py lstm full
 ```
 
 Args:
+
 ```"sample/full"```: runs on sample or full dataset (default is full)
+
 ```"lstm/transformer"```: runs with bidirectional LSTM model or Transformer model (default is LSTM)
 
 
