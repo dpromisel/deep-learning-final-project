@@ -1,6 +1,4 @@
-# deep-learning-final-project
-
-Sentiment Analysis on Amazon Customer Reviews
+# Sentiment Analysis on Amazon Customer Reviews 
 
 ## How to use
 
