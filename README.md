@@ -16,10 +16,13 @@ We also attempted to implement a Transformer model (TransformerSentimentModel) b
 
 ## How to use
 
-python3 run.py
+``` 
+python3 run.py lstm full
+```
+
 Args:
-"sample/full": runs on sample or full dataset (default is full)
-"lstm/transformer": runs with bidirectional LSTM model or Transformer model (default is LSTM)
+```"sample/full"```: runs on sample or full dataset (default is full)
+```"lstm/transformer"```: runs with bidirectional LSTM model or Transformer model (default is LSTM)
 
 ## Background
 
