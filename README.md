@@ -2,7 +2,18 @@
 
 Sentiment Analysis on Amazon Customer Reviews
 
-## Code FAQ
+## How to use
+
+``` 
+python3 run.py lstm full
+```
+
+Args:
+```"sample/full"```: runs on sample or full dataset (default is full)
+```"lstm/transformer"```: runs with bidirectional LSTM model or Transformer model (default is LSTM)
+
+
+## Code Structure
 
 V1 (failed):
 Model.py implements our v1 (failed) sentiment models, which got to 80% accuracy on occasion but 90% of the time, resulted in classifying everything as a "good" review.
@@ -13,16 +24,6 @@ V2:
 Our final iteration was implementing an LSTM dropout model with Keras' sequential model framework. We achieved 94% accuracy on our largest training run, using all of our 800k samples evenly.
 
 We also attempted to implement a Transformer model (TransformerSentimentModel) but could not get it to work in the Keras sequential environment, as this was different than our traditional experience and didn't know exactly what was causing the inheritance errors we encountered. The scaffolding, TransformerSentimentModel(), is in run.py.
-
-## How to use
-
-``` 
-python3 run.py lstm full
-```
-
-Args:
-```"sample/full"```: runs on sample or full dataset (default is full)
-```"lstm/transformer"```: runs with bidirectional LSTM model or Transformer model (default is LSTM)
 
 ## Background
 
